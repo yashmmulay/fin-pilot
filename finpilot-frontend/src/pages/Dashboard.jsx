@@ -15,7 +15,6 @@ import DashboardSkeleton from "../components/dashboard/DashboardSkeleton";
 
 import {
     calculatePortfolioHealth,
-    getRiskPreview,
 } from "../utils/dashboard";
 
 function Dashboard() {
@@ -25,6 +24,7 @@ function Dashboard() {
     const [allocation, setAllocation] = useState([]);
     const [goals, setGoals] = useState([]);
     const [watchlist, setWatchlist] = useState([]);
+    const [risks, setRisks] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const health = calculatePortfolioHealth(portfolio);
@@ -41,16 +41,16 @@ function Dashboard() {
                     goalsData,
                     watchlistData,
                 ] = await Promise.all([
-
                     getDashboardData(),
                     getPortfolio(),
                     getGoals(),
                     getWatchlist(),
-
                 ]);
 
                 setDashboard(dashboardData.dashboard);
                 setAllocation(dashboardData.allocation);
+                setRisks(dashboardData.risks);
+
                 setPortfolio(portfolioData);
                 setGoals(goalsData);
                 setWatchlist(watchlistData);
@@ -75,28 +75,20 @@ function Dashboard() {
     }, []);
 
     if (loading) {
-
         return <DashboardSkeleton />;
-
     }
 
     return (
 
         <div className="space-y-4">
 
-            {/* Header */}
-
             <DashboardHeader
                 dashboard={dashboard}
             />
 
-            {/* KPI */}
-
             <DashboardStats
                 dashboard={dashboard}
             />
-
-            {/* First Row */}
 
             <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
 
@@ -106,28 +98,23 @@ function Dashboard() {
                 />
 
                 <GoalProgressCard
-                    goal={dashboard.highestPriorityGoal}
+                    goal={dashboard?.highestPriorityGoal}
                 />
 
                 <ModernRiskAlerts
-                        alerts={getRiskPreview(portfolio)}
-                    />         
+                    alerts={risks}
+                />
 
             </div>
 
-            {/* Second Row */}
-
-            {/* added items-start to prevent vertical stretching */}
-            
             <div className="grid grid-cols-1 gap-4 xl:col-span-2">
 
-                {/* Portfolio Allocation */}
                 <div className="xl:col-span-1 max-h-36">
                     <PortfolioAllocationChart
-
                         data={allocation}
                     />
                 </div>
+
             </div>
 
         </div>

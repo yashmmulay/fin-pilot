@@ -7,36 +7,70 @@ function AddWatchlistModal({
     onSave,
 }) {
 
-    const [formData, setFormData] = useState({
+    const initialForm = {
         assetSymbol: "",
         assetName: "",
         assetType: "STOCK",
-    });
+        exchange: "NASDAQ",
+    };
 
+    const [formData, setFormData] = useState(initialForm);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
 
         if (open) {
 
-            setFormData({
-                assetSymbol: "",
-                assetName: "",
-                assetType: "STOCK",
-            });
+            setFormData(initialForm);
+            setLoading(false);
 
         }
 
     }, [open]);
 
+    if (!open) {
+        return null;
+    }
+
     function handleChange(e) {
 
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
+        const { name, value } = e.target;
+
+        if (name === "assetType") {
+
+            setFormData(prev => ({
+
+                ...prev,
+
+                assetType: value,
+
+                exchange:
+                    value === "MUTUAL_FUND"
+                        ? "MF"
+                        : "NASDAQ",
+
+            }));
+
+            return;
+
+        }
+
+        setFormData(prev => ({
+
+            ...prev,
+
+            [name]: value,
+
+        }));
 
     }
+
+    const exchangeOptions = [
+        "NASDAQ",
+        "NYSE",
+        "NSE",
+        "BSE",
+    ];
 
     async function handleSubmit(e) {
 
@@ -57,22 +91,53 @@ function AddWatchlistModal({
         try {
 
             await onSave({
-                assetSymbol: formData.assetSymbol.trim().toUpperCase(),
-                assetName: formData.assetName.trim(),
-                assetType: formData.assetType,
+
+                ...formData,
+
+                assetSymbol:
+                    formData.assetSymbol
+                        .trim()
+                        .toUpperCase(),
+
+                assetName:
+                    formData.assetName
+                        .trim(),
+
+                exchange:
+                    formData.assetType === "MUTUAL_FUND"
+                        ? "MF"
+                        : formData.exchange,
+
             });
 
-            toast.success("Asset added to watchlist.");
+            toast.success(
+                "Asset added to watchlist."
+            );
 
             onClose();
 
         } catch (error) {
 
-            const message =
-                error?.response?.data?.message ||
-                "Failed to add asset.";
+            const fieldErrors =
+                error?.response?.data?.fieldErrors;
 
-            toast.error(message);
+            if (fieldErrors) {
+
+                toast.error(
+                    Object.values(fieldErrors)[0]
+                );
+
+            } else {
+
+                toast.error(
+
+                    error?.response?.data?.message ||
+
+                    "Failed to add asset."
+
+                );
+
+            }
 
         } finally {
 
@@ -80,10 +145,6 @@ function AddWatchlistModal({
 
         }
 
-    }
-
-    if (!open) {
-        return null;
     }
 
     return (
@@ -130,8 +191,9 @@ function AddWatchlistModal({
                             name="assetSymbol"
                             value={formData.assetSymbol}
                             onChange={handleChange}
-                            placeholder="e.g. TCS"
-                            className="w-full rounded-lg border px-4 py-3 focus:border-blue-500 focus:outline-none"
+                            placeholder="e.g. TCS or AAPL"
+                            disabled={loading}
+                            className="w-full rounded-lg border px-4 py-3 focus:border-blue-500 focus:outline-none disabled:bg-gray-100"
                         />
 
                     </div>
@@ -149,8 +211,9 @@ function AddWatchlistModal({
                             name="assetName"
                             value={formData.assetName}
                             onChange={handleChange}
-                            placeholder="e.g. Tata Consultancy Services"
-                            className="w-full rounded-lg border px-4 py-3 focus:border-blue-500 focus:outline-none"
+                            placeholder="e.g. Apple Inc."
+                            disabled={loading}
+                            className="w-full rounded-lg border px-4 py-3 focus:border-blue-500 focus:outline-none disabled:bg-gray-100"
                         />
 
                     </div>
@@ -167,24 +230,68 @@ function AddWatchlistModal({
                             name="assetType"
                             value={formData.assetType}
                             onChange={handleChange}
+                            disabled={loading}
                             className="w-full rounded-lg border px-4 py-3 focus:border-blue-500 focus:outline-none"
                         >
 
                             <option value="STOCK">
+
                                 Stock
+
                             </option>
 
                             <option value="ETF">
+
                                 ETF
+
                             </option>
 
                             <option value="MUTUAL_FUND">
+
                                 Mutual Fund
+
                             </option>
 
                         </select>
 
                     </div>
+
+                    {formData.assetType !== "MUTUAL_FUND" && (
+
+                        <div>
+
+                            <label className="mb-2 block text-sm font-medium">
+
+                                Exchange
+
+                            </label>
+
+                            <select
+                                name="exchange"
+                                value={formData.exchange}
+                                onChange={handleChange}
+                                disabled={loading}
+                                className="w-full rounded-lg border px-4 py-3 focus:border-blue-500 focus:outline-none"
+                            >
+
+                                {exchangeOptions.map(exchange => (
+
+                                    <option
+                                        key={exchange}
+                                        value={exchange}
+                                    >
+
+                                        {exchange}
+
+                                    </option>
+
+                                ))}
+
+                            </select>
+
+                        </div>
+
+                    )}
 
                     {/* Footer */}
 
@@ -204,7 +311,7 @@ function AddWatchlistModal({
                         <button
                             type="submit"
                             disabled={loading}
-                            className="rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
+                            className="rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white hover:bg-blue-700 disabled:bg-blue-400"
                         >
 
                             {loading

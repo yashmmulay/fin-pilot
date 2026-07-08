@@ -1,17 +1,13 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 
-function AddAssetModal({
-    open,
-    onClose,
-    onSave,
-    asset,
-}) {
+function AddAssetModal({ open, onClose, onSave, asset }) {
 
     const initialFormData = {
         assetSymbol: "",
         assetName: "",
         assetType: "STOCK",
+        exchange: "NASDAQ",
         quantity: "",
         purchasePrice: "",
         purchaseDate: "",
@@ -22,21 +18,26 @@ function AddAssetModal({
 
     useEffect(() => {
 
-        if (!open) {
-            return;
-        }
+        if (!open) return;
 
         setSaving(false);
 
         if (asset) {
 
             setFormData({
+
                 assetSymbol: asset.assetSymbol,
                 assetName: asset.assetName,
                 assetType: asset.assetType,
+                exchange:
+                    asset.exchange ??
+                    (asset.assetType === "MUTUAL_FUND"
+                        ? "MF"
+                        : "NASDAQ"),
                 quantity: asset.quantity,
                 purchasePrice: asset.purchasePrice,
                 purchaseDate: asset.purchaseDate,
+
             });
 
         } else {
@@ -47,18 +48,47 @@ function AddAssetModal({
 
     }, [open, asset]);
 
-    if (!open) {
-        return null;
-    }
+    if (!open) return null;
 
     function handleChange(e) {
 
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
+        const { name, value } = e.target;
+
+        if (name === "assetType") {
+
+            setFormData(prev => ({
+
+                ...prev,
+
+                assetType: value,
+
+                exchange:
+                    value === "MUTUAL_FUND"
+                        ? "MF"
+                        : "NASDAQ",
+
+            }));
+
+            return;
+
+        }
+
+        setFormData(prev => ({
+
+            ...prev,
+
+            [name]: value,
+
+        }));
 
     }
+
+    const exchangeOptions = [
+        "NASDAQ",
+        "NYSE",
+        "NSE",
+        "BSE",
+    ];
 
     async function handleSubmit(e) {
 
@@ -68,7 +98,16 @@ function AddAssetModal({
 
         try {
 
-            await onSave(formData);
+            await onSave({
+
+                ...formData,
+
+                exchange:
+                    formData.assetType === "MUTUAL_FUND"
+                        ? "MF"
+                        : formData.exchange,
+
+            });
 
             toast.success(
                 asset
@@ -82,14 +121,28 @@ function AddAssetModal({
 
         } catch (error) {
 
-            console.error(error);
+            const fieldErrors =
+                error?.response?.data?.fieldErrors;
 
-            const message =
-                error?.response?.data?.message ||
-                error?.message ||
-                "Failed to save asset.";
+            if (fieldErrors) {
 
-            toast.error(message);
+                toast.error(
+                    Object.values(fieldErrors)[0]
+                );
+
+            } else {
+
+                toast.error(
+
+                    error?.response?.data?.message ||
+
+                    error?.message ||
+
+                    "Failed to save asset."
+
+                );
+
+            }
 
         } finally {
 
@@ -108,7 +161,11 @@ function AddAssetModal({
                 <div className="mb-6 flex items-center justify-between">
 
                     <h2 className="text-2xl font-bold">
-                        {asset ? "Edit Asset" : "Add Asset"}
+
+                        {asset
+                            ? "Edit Asset"
+                            : "Add Asset"}
+
                     </h2>
 
                     <button
@@ -117,7 +174,9 @@ function AddAssetModal({
                         disabled={saving}
                         className="text-2xl font-bold text-gray-500 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
+
                         ×
+
                     </button>
 
                 </div>
@@ -156,19 +215,56 @@ function AddAssetModal({
                         disabled={saving}
                         className="w-full rounded-lg border p-3 disabled:bg-gray-100"
                     >
+
                         <option value="STOCK">
+
                             Stock
+
                         </option>
 
                         <option value="ETF">
+
                             ETF
+
                         </option>
 
                         <option value="MUTUAL_FUND">
+
                             Mutual Fund
+
                         </option>
 
                     </select>
+
+                    {formData.assetType !==
+                        "MUTUAL_FUND" && (
+
+                        <select
+                            name="exchange"
+                            value={formData.exchange}
+                            onChange={handleChange}
+                            disabled={saving}
+                            className="w-full rounded-lg border p-3 disabled:bg-gray-100"
+                        >
+
+                            {exchangeOptions.map(
+                                exchange => (
+
+                                    <option
+                                        key={exchange}
+                                        value={exchange}
+                                    >
+
+                                        {exchange}
+
+                                    </option>
+
+                                )
+                            )}
+
+                        </select>
+
+                    )}
 
                     <input
                         type="number"
@@ -212,7 +308,9 @@ function AddAssetModal({
                             disabled={saving}
                             className="rounded-lg border px-5 py-2 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
                         >
+
                             Cancel
+
                         </button>
 
                         <button
@@ -220,9 +318,15 @@ function AddAssetModal({
                             disabled={saving}
                             className="rounded-lg bg-blue-600 px-5 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
                         >
+
                             {saving
-                                ? (asset ? "Updating Asset..." : "Saving Asset...")
-                                : (asset ? "Update Asset" : "Save Asset")}
+                                ? asset
+                                    ? "Updating Asset..."
+                                    : "Saving Asset..."
+                                : asset
+                                    ? "Update Asset"
+                                    : "Save Asset"}
+
                         </button>
 
                     </div>
@@ -234,6 +338,7 @@ function AddAssetModal({
         </div>
 
     );
+
 }
 
 export default AddAssetModal;

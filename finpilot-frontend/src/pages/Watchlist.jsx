@@ -58,7 +58,7 @@ function Watchlist() {
 
     async function handleDelete(asset) {
         try {
-            await removeFromWatchlist(asset.assetSymbol);
+            await removeFromWatchlist(asset.id);
             toast.success("Asset removed successfully.");
             await loadWatchlist();
         } catch (error) {

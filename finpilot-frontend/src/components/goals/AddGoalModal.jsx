@@ -94,11 +94,16 @@ function AddGoalModal({
 
         } catch (error) {
 
-            const message =
-                error?.response?.data?.message ||
-                "Failed to create goal.";
+            const fieldErrors = error?.response?.data?.fieldErrors;
 
-            toast.error(message);
+            if (fieldErrors) {
+                toast.error(Object.values(fieldErrors)[0]);
+            } else {
+                toast.error(
+                    error?.response?.data?.message ||
+                    "Failed to create goal."
+                );
+            }
 
         } finally {
 
