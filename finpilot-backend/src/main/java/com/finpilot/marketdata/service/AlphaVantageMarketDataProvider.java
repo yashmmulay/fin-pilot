@@ -74,7 +74,7 @@ public class AlphaVantageMarketDataProvider {
                 .symbol(symbol.toUpperCase())
                 .exchange(exchange)
                 .assetType(assetType)
-                .companyName(null)
+                .companyName(symbol.toUpperCase())
                 .currency(getCurrency(exchange))
                 .currentPrice(new BigDecimal(quote.getPrice()))
                 .lastUpdated(LocalDateTime.now())
