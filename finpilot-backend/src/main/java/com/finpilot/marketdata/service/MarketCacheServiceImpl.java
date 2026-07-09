@@ -147,43 +147,46 @@ public class MarketCacheServiceImpl implements MarketCacheService {
             String companyName,
             String exchange,
             AssetType assetType) {
-
+    
         try {
-
+    
             MarketQuote quote = marketDataService.fetchLatestPrice(
                     symbol,
                     exchange,
                     assetType
             );
-
+    
+            String finalCompanyName =
+                    companyName != null && !companyName.isBlank()
+                            ? companyName
+                            : quote.getCompanyName() != null && !quote.getCompanyName().isBlank()
+                                    ? quote.getCompanyName()
+                                    : symbol.toUpperCase();
+    
             MarketPriceCache cache = MarketPriceCache.builder()
                     .symbol(quote.getSymbol())
                     .exchange(quote.getExchange())
                     .assetType(quote.getAssetType())
-                    .companyName(
-                            companyName != null
-                                    ? companyName
-                                    : quote.getCompanyName()
-                    )
+                    .companyName(finalCompanyName)
                     .currency(quote.getCurrency())
                     .currentPrice(quote.getCurrentPrice())
                     .lastUpdated(quote.getLastUpdated())
                     .source(quote.getSource())
                     .build();
-
+    
             log.info("Created market cache for {}:{}", exchange, symbol);
-
+    
             return cacheRepository.save(cache);
-
+    
         } catch (Exception ex) {
-
+    
             log.error(
                     "Unable to create market cache for {}:{}",
                     exchange,
                     symbol,
                     ex
             );
-
+    
             throw new MarketDataUnavailableException(
                     "Unable to fetch market data for " + symbol,
                     ex
