@@ -2,7 +2,7 @@ import api from "./api";
 
 export async function getDashboard() {
 
-    const response = await api.get("/dashboard");
+    const response = await api.get("/api/dashboard");
 
     return response.data;
 }
@@ -15,11 +15,11 @@ export async function getDashboardData() {
         riskResponse,
     ] = await Promise.all([
 
-        api.get("/dashboard"),
+        api.get("/api/dashboard"),
 
-        api.get("/portfolio/allocation"),
+        api.get("/api/portfolio/allocation"),
 
-        api.get("/risk"),
+        api.get("/api/risk"),
 
     ]);
 

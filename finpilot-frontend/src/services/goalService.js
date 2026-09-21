@@ -8,7 +8,7 @@ import api from "./api";
 
 export async function getGoals() {
 
-    const response = await api.get("/goals");
+    const response = await api.get("/api/goals");
 
     return response.data;
 
@@ -23,7 +23,7 @@ export async function getGoals() {
 export async function getGoalById(goalId) {
 
     const response = await api.get(
-        `/goals/${goalId}`
+        `/api/goals/${goalId}`
     );
 
     return response.data;
@@ -39,7 +39,7 @@ export async function getGoalById(goalId) {
 export async function createGoal(goal) {
 
     const response = await api.post(
-        "/goals",
+        "/api/goals",
         goal
     );
 
@@ -56,7 +56,7 @@ export async function createGoal(goal) {
 export async function deleteGoal(goalId) {
 
     await api.delete(
-        `/goals/${goalId}`
+        `/api/goals/${goalId}`
     );
 
 }

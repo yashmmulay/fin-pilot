@@ -2,7 +2,7 @@ import api from "./api";
 
 export async function getWatchlist() {
 
-    const response = await api.get("/watchlist");
+    const response = await api.get("/api/watchlist");
 
     return response.data;
 
@@ -11,7 +11,7 @@ export async function getWatchlist() {
 export async function addToWatchlist(request) {
 
     const response = await api.post(
-        "/watchlist",
+        "/api/watchlist",
         request
     );
 
@@ -22,7 +22,7 @@ export async function addToWatchlist(request) {
 export async function removeFromWatchlist(assetSymbol) {
 
     await api.delete(
-        `/watchlist/${assetSymbol}`
+        `/api/watchlist/${assetSymbol}`
     );
 
 }
