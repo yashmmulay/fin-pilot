@@ -33,6 +33,16 @@ public class PortfolioServiceImpl implements PortfolioService {
     @Override
     public PortfolioResponse addAsset(User user, PortfolioRequest request) {
 
+        if (request.getQuantity() == null ||
+                request.getQuantity().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Quantity must be greater than zero");
+        }
+
+        if (request.getPurchasePrice() == null ||
+                request.getPurchasePrice().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Purchase price must be greater than zero");
+        }
+
         String exchange = exchangeResolver.resolve(
                 request.getExchange(),
                 request.getAssetType()
