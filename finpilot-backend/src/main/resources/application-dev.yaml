@@ -24,7 +24,7 @@ spring:
 
 jwt:
   secret: 3b2d5f1a9c7e4b8d6f0a2c5e8d1f7a9b3c6d8e0f2a4b6c8d
-  expiration: 86400000
+  expiration: 120000
 
 marketdata:
   api:
